@@ -1,0 +1,13 @@
+# ESP-IDF build output
+build/
+sdkconfig
+sdkconfig.old
+
+# Resolved by the component manager, not source
+managed_components/
+dependencies.lock
+
+# compote component pack
+dist/
+
+.vscode/

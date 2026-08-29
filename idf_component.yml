@@ -1,0 +1,53 @@
+# Manifest for the ESP Component Registry.
+#
+# Before uploading, fill in the four fields marked TODO below: they identify the
+# component and its author, and cannot be guessed.
+version: "0.1.0"
+description: >-
+  Raspberry Pi DSI touch display (and clones such as the 5" OSOYOO) on the ESP32-P4:
+  800x480 RGB888 over one MIPI DSI lane through a TC358762-compatible bridge, with an
+  ATTINY-compatible controller doing power sequencing and backlight, and FT5x06 touch.
+  Brings the whole display up in one call and hands back an esp_lcd panel handle.
+license: "GPL-2.0-only"
+
+# TODO: the project's home page, e.g. the GitHub repository page
+# url: "https://github.com/<user>/<repo>"
+
+# TODO: the git remote. The component sits at the root of its own repository, so
+# no repository_info.path is needed.
+# repository: "https://github.com/<user>/<repo>.git"
+
+# TODO: issue tracker
+# issues: "https://github.com/<user>/<repo>/issues"
+
+# TODO: "Your Name <you@example.com>"
+# maintainers:
+#   - "Your Name <you@example.com>"
+
+tags:
+  - lcd
+  - display
+  - mipi-dsi
+  - dsi
+  - raspberry-pi
+  - tc358762
+  - touch
+  - ft5x06
+
+targets:
+  - esp32p4
+
+dependencies:
+  # The component reads the DSI HAL through esp_hal_lcd, which is a component of its
+  # own only from v6.0; before that the same headers live in `hal`
+  idf: ">=6.0"
+  # The touch controller is an ordinary FT5x06; no reason to reimplement it
+  espressif/esp_lcd_touch_ft5x06: "^1.0.6"
+
+files:
+  exclude:
+    - "**/build/**"
+    - "**/sdkconfig"
+    - "**/sdkconfig.old"
+    - "**/managed_components/**"
+    - "**/dependencies.lock"

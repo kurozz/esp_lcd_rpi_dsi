@@ -1,0 +1,94 @@
+menu "Raspberry Pi DSI display"
+
+    config ESP_LCD_RPI_DSI_I2C_SDA_GPIO
+        int "I2C SDA GPIO"
+        default 7
+        help
+            GPIO wired to SDA on the MIPI DSI FPC connector. Both the panel's ATTINY and
+            the touch controller live on this bus. GPIO7 on the ESP32-P4-Function-EV-Board,
+            but check your schematic.
+
+    config ESP_LCD_RPI_DSI_I2C_SCL_GPIO
+        int "I2C SCL GPIO"
+        default 8
+        help
+            GPIO wired to SCL on the MIPI DSI FPC connector.
+
+    config ESP_LCD_RPI_DSI_LDO_CHAN
+        int "LDO channel supplying VDD_MIPI_DPHY"
+        default 3
+        help
+            Internal LDO channel powering the MIPI DSI PHY, at 2.5V. Set to -1 if the rail
+            comes from an external regulator or is already acquired elsewhere.
+
+    choice ESP_LCD_RPI_DSI_TIMING
+        prompt "Panel timing"
+        default ESP_LCD_RPI_DSI_TIMING_LEGACY
+        help
+            Two known-good 800x480 modes for this bridge.
+
+        config ESP_LCD_RPI_DSI_TIMING_LEGACY
+            bool "Raspberry Pi legacy mode (hfp=1, 25.98 MHz)"
+        config ESP_LCD_RPI_DSI_TIMING_WAVESHARE
+            bool "Longer porches (hfp=59, 27.78 MHz)"
+    endchoice
+
+    config ESP_LCD_RPI_DSI_CONTINUOUS_CLOCK
+        bool "Keep the DSI clock lane in high speed continuously"
+        default y
+        help
+            Required for this panel: with the IDF default the clock lane drops to low-power
+            between packets, the bridge's pixel clock PLL loses lock and the panel stays
+            white. The TC358762 makes its DPI clock from the DSI clock lane, and the Linux
+            driver never sets MIPI_DSI_CLOCK_NON_CONTINUOUS.
+
+    config ESP_LCD_RPI_DSI_NON_BURST_VIDEO
+        bool "Drive the link in non-burst mode with sync pulses"
+        default n
+        help
+            Troubleshooting knob. Measured to be unnecessary: burst works fine once the
+            clock lane is continuous.
+
+    config ESP_LCD_RPI_DSI_DISABLE_LP
+        bool "Disable low-power transitions during blanking"
+        default n
+        help
+            Troubleshooting knob. Measured to be unnecessary on this panel.
+
+    config ESP_LCD_RPI_DSI_USE_DMA2D
+        bool "Use DMA2D to copy the draw buffer into the frame buffer"
+        default y
+        help
+            Hooks DMA2D into esp_lcd_panel_draw_bitmap(), saving CPU time on every flush.
+
+    config ESP_LCD_RPI_DSI_TOUCH
+        bool "Enable the FT5x06 touch controller"
+        default y
+        help
+            The display carries an FT5x06-family capacitive controller at I2C 0x38, whose
+            reset line is released by the panel's power-on sequence. It is driven by
+            espressif/esp_lcd_touch_ft5x06, and esp_lcd_rpi_dsi_get_touch() hands you its
+            esp_lcd_touch_handle_t. Turn this off to attach the controller yourself on the
+            bus returned by esp_lcd_rpi_dsi_get_i2c_bus().
+
+    if ESP_LCD_RPI_DSI_TOUCH
+        config ESP_LCD_RPI_DSI_TOUCH_SWAP_XY
+            bool "Swap touch X and Y"
+            default n
+            help
+                Passed through to esp_lcd_touch_config_t::flags.swap_xy.
+
+        config ESP_LCD_RPI_DSI_TOUCH_INVERT_X
+            bool "Mirror touch X"
+            default n
+            help
+                Passed through to esp_lcd_touch_config_t::flags.mirror_x.
+
+        config ESP_LCD_RPI_DSI_TOUCH_INVERT_Y
+            bool "Mirror touch Y"
+            default n
+            help
+                Passed through to esp_lcd_touch_config_t::flags.mirror_y.
+    endif
+
+endmenu
