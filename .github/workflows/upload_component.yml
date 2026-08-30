@@ -1,0 +1,39 @@
+name: Upload to the ESP Component Registry
+
+on:
+  push:
+    tags:
+      - "v*"
+  # Run by hand to validate the component without publishing anything
+  workflow_dispatch:
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # A version that reaches the registry can never be replaced or deleted, so
+      # refuse to upload when the tag and the manifest disagree about what this
+      # release is. idf_component.yml stays the single source of truth for the
+      # version; the tag only says when to publish it.
+      - name: Check the tag against the manifest
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          manifest="$(sed -n 's/^version: *"\(.*\)".*/\1/p' idf_component.yml)"
+          echo "tag=$tag  manifest=$manifest"
+          if [ "$tag" != "$manifest" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match idf_component.yml version $manifest"
+            exit 1
+          fi
+
+      - name: Upload the component
+        uses: espressif/upload-components-ci-action@v1
+        with:
+          name: "esp_lcd_rpi_dsi"
+          namespace: "kurozz"
+          api_token: ${{ secrets.IDF_COMPONENT_API_TOKEN }}
+          # No version here on purpose: the action reads it from idf_component.yml,
+          # which the step above has already checked against the tag.
+          dry_run: ${{ github.event_name == 'workflow_dispatch' }}
