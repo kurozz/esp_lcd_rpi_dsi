@@ -1,4 +1,4 @@
 dependencies:
-  esp_lcd_rpi_dsi:
+  kurozz/esp_lcd_rpi_dsi:
     version: "*"
     override_path: "../../../"

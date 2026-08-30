@@ -1,7 +1,4 @@
 # Manifest for the ESP Component Registry.
-#
-# Before uploading, fill in the four fields marked TODO below: they identify the
-# component and its author, and cannot be guessed.
 version: "0.1.0"
 description: >-
   Raspberry Pi DSI touch display (and clones such as the 5" OSOYOO) on the ESP32-P4:
@@ -10,19 +7,15 @@ description: >-
   Brings the whole display up in one call and hands back an esp_lcd panel handle.
 license: "GPL-2.0-only"
 
-# TODO: the project's home page, e.g. the GitHub repository page
-# url: "https://github.com/<user>/<repo>"
+url: "https://github.com/kurozz/esp_lcd_rpi_dsi"
 
-# TODO: the git remote. The component sits at the root of its own repository, so
-# no repository_info.path is needed.
-# repository: "https://github.com/<user>/<repo>.git"
+# The component sits at the root of its own repository, so no repository_info.path
+repository: "https://github.com/kurozz/esp_lcd_rpi_dsi.git"
 
-# TODO: issue tracker
-# issues: "https://github.com/<user>/<repo>/issues"
+issues: "https://github.com/kurozz/esp_lcd_rpi_dsi/issues"
 
-# TODO: "Your Name <you@example.com>"
-# maintainers:
-#   - "Your Name <you@example.com>"
+maintainers:
+  - "Kuro <kurozz@protonmail.com>"
 
 tags:
   - lcd
