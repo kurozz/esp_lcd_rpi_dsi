@@ -4,6 +4,15 @@ All notable changes to this component are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- ESP-IDF v5.5 support. On 5.x the panel pins the DSI clock lane to high speed after the DPI stream starts,
+  replacing the 6.x `clock_lane_force_hs` bus flag. DMA2D is enabled through the DPI panel config, and the
+  LCD HAL comes from `hal` rather than `esp_hal_lcd`. The ESP-IDF 6.x code path is unchanged.
+- `esp_lcd_rpi_dsi_vendor_config_t::flags.continuous_clock`, used only on ESP-IDF 5.x.
+
 ## [0.1.0] - 2026-08-29
 
 Initial release.

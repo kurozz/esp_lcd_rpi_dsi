@@ -9,6 +9,7 @@
 #if SOC_MIPI_DSI_SUPPORTED
 #include <stdlib.h>
 #include "esp_check.h"
+#include "esp_idf_version.h"
 #include "esp_log.h"
 #include "esp_rom_sys.h"
 #include "freertos/FreeRTOS.h"
@@ -93,7 +94,8 @@ static const rpi_dsi_bridge_cmd_t s_bridge_init[] = {
 };
 
 /* Layout mirror of the private `esp_lcd_dsi_bus_t` from
- * $IDF_PATH/components/esp_lcd/dsi/mipi_dsi_priv.h (IDF v6.1). We only need the
+ * $IDF_PATH/components/esp_lcd/dsi/mipi_dsi_priv.h (IDF v6.1; the leading
+ * `bus_id` and `hal` members are the same in v5.5.4). We only need the
  * HAL context, to emit generic long writes and to override the video mode --
  * neither is reachable through the public esp_lcd API. rpi_dsi_bus_hal() sanity
  * checks the result so a layout change in a future IDF fails loudly here rather
@@ -109,6 +111,7 @@ typedef struct {
     i2c_master_dev_handle_t attiny;
     uint8_t virtual_channel;
     uint8_t brightness;
+    bool continuous_clock;
     // saved originals of the MIPI DPI panel
     esp_err_t (*del)(esp_lcd_panel_t *panel);
     esp_err_t (*init)(esp_lcd_panel_t *panel);
@@ -238,6 +241,7 @@ esp_err_t esp_lcd_new_panel_rpi_dsi(esp_lcd_panel_io_handle_t io,
     ctx->io = io;
     ctx->virtual_channel = vendor_config->mipi_config.dpi_config->virtual_channel;
     ctx->brightness = vendor_config->brightness ? vendor_config->brightness : 255;
+    ctx->continuous_clock = vendor_config->flags.continuous_clock;
 
     ESP_GOTO_ON_ERROR(esp_lcd_new_panel_dpi(vendor_config->mipi_config.dsi_bus,
                                             vendor_config->mipi_config.dpi_config, ret_panel), err, TAG,
@@ -317,6 +321,15 @@ static esp_err_t panel_rpi_dsi_init(esp_lcd_panel_t *panel)
     // link problem from a video-mode problem.
     // now let the DPI panel start streaming video into the bridge
     ESP_RETURN_ON_ERROR(ctx->init(panel), TAG, "starting the DPI video stream failed");
+
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(6, 0, 0)
+    // ESP-IDF 5.x has no clock_lane_force_hs bus flag, and the DPI init above has just
+    // put the clock lane in AUTO, dropping it to low power between packets. The bridge
+    // makes its pixel clock from that lane, so pin it to high speed here instead.
+    if (ctx->continuous_clock) {
+        mipi_dsi_host_ll_set_clock_lane_state(ctx->hal->host, MIPI_DSI_LL_CLOCK_LANE_STATE_HS);
+    }
+#endif
 
     // PA_LCD_LR was already set by the power-on sequence, so only the backlight is left
     ESP_RETURN_ON_ERROR(rpi_dsi_attiny_write(ctx, REG_PWM, ctx->brightness), TAG, "backlight on failed");

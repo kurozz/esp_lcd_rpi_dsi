@@ -31,9 +31,9 @@ targets:
   - esp32p4
 
 dependencies:
-  # The component reads the DSI HAL through esp_hal_lcd, which is a component of its
-  # own only from v6.0; before that the same headers live in `hal`
-  idf: ">=6.0"
+  # The DSI HAL comes from esp_hal_lcd on v6.0 and newer, and from `hal` on v5.5
+  # (CMakeLists.txt picks the right one). Run on v5.5.4; earlier 5.x not tried.
+  idf: ">=5.5"
   # The touch controller is an ordinary FT5x06; no reason to reimplement it
   espressif/esp_lcd_touch_ft5x06: "^1.0.6"
 
