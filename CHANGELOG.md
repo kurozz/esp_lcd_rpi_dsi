@@ -4,13 +4,13 @@ All notable changes to this component are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.0] - 2026-11-25
+## [Unreleased]
 
 ### Added
 
 - `esp_lcd_rpi_dsi_config_t::num_fbs`, the number of screen-sized frame buffers
-  the DPI panel allocates, passed to `esp_lcd_dpi_panel_config_t::num_fbs`. The
-  default, 0, gives one frame buffer, as before.
+  the DPI panel allocates, passed to `esp_lcd_dpi_panel_config_t::num_fbs`.
+  `ESP_LCD_RPI_DSI_DEFAULT_CONFIG()` sets it to 1, the IDF's default.
 
 ## [0.1.0] - 2026-08-29
 
