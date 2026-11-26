@@ -1,4 +1,4 @@
-# The LCD HAL became its own component (esp_hal_lcd) in ESP-IDF 6; before that it is part of `hal`
+# ESP-IDF 6 ships the LCD HAL as its own component, esp_hal_lcd; ESP-IDF 5.5 ships it in `hal`
 if(IDF_VERSION_MAJOR GREATER_EQUAL 6)
     set(rpi_dsi_lcd_hal esp_hal_lcd)
 else()
