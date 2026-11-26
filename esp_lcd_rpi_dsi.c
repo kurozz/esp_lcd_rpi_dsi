@@ -61,6 +61,8 @@ esp_err_t esp_lcd_rpi_dsi_start(const esp_lcd_rpi_dsi_config_t *config,
                                 esp_lcd_rpi_dsi_handle_t *ret_handle)
 {
     ESP_RETURN_ON_FALSE(config && ret_handle, ESP_ERR_INVALID_ARG, TAG, "invalid arguments");
+    ESP_RETURN_ON_FALSE(config->num_fbs <= 3, ESP_ERR_INVALID_ARG, TAG,
+                        "num_fbs %d not within [0,3]", (int)config->num_fbs);
 
     esp_err_t ret = ESP_OK;
     esp_lcd_rpi_dsi_handle_t disp = calloc(1, sizeof(struct esp_lcd_rpi_dsi_t));
@@ -73,9 +75,10 @@ esp_err_t esp_lcd_rpi_dsi_start(const esp_lcd_rpi_dsi_config_t *config,
              (int)config->timing.hsync_pulse_width, (int)config->timing.hsync_back_porch,
              (int)config->timing.hsync_front_porch, (int)config->timing.vsync_pulse_width,
              (int)config->timing.vsync_back_porch, (int)config->timing.vsync_front_porch);
-    ESP_LOGI(TAG, "flags: continuous_clock=%d non_burst=%d disable_lp=%d touch=%d",
+    ESP_LOGI(TAG, "flags: continuous_clock=%d non_burst=%d disable_lp=%d touch=%d fbs=%d",
              config->flags.continuous_clock, config->flags.non_burst_video,
-             config->flags.disable_lp, config->flags.enable_touch);
+             config->flags.disable_lp, config->flags.enable_touch,
+             config->num_fbs ? (int)config->num_fbs : 1);
 
     // VDD_MIPI_DPHY, without which the PHY never leaves its "no power" state
     if (config->ldo_chan >= 0) {
@@ -134,6 +137,7 @@ esp_err_t esp_lcd_rpi_dsi_start(const esp_lcd_rpi_dsi_config_t *config,
         .dpi_clk_src = MIPI_DSI_DPI_CLK_SRC_DEFAULT,
         .dpi_clock_freq_mhz = config->dpi_clock_freq_mhz,
         .in_color_format = LCD_COLOR_FMT_RGB888,
+        .num_fbs = config->num_fbs,
         .video_timing = config->timing,
         .flags.disable_lp = config->flags.disable_lp,
 #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(6, 0, 0)

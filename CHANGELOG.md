@@ -13,6 +13,9 @@ All notable changes to this component are documented here. The format follows
   DPI stream starts. On 5.5, DMA2D is enabled through the DPI panel config and the LCD HAL comes from `hal`
   rather than `esp_hal_lcd`.
 - `esp_lcd_rpi_dsi_vendor_config_t::flags.continuous_clock`, used only before ESP-IDF v5.5.5.
+- `esp_lcd_rpi_dsi_config_t::num_fbs`, the number of screen-sized frame buffers
+  the DPI panel allocates, passed to `esp_lcd_dpi_panel_config_t::num_fbs`.
+  `ESP_LCD_RPI_DSI_DEFAULT_CONFIG()` sets it to 1, the IDF's default.
 
 ## [0.1.0] - 2026-08-29
 

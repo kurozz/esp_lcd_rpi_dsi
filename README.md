@@ -44,6 +44,14 @@ share the bus, and `esp_lcd_rpi_dsi_set_brightness()` for the backlight.
 Defaults come from `Component config -> Raspberry Pi DSI display`; the config struct
 overrides any of them per call.
 
+The DPI panel allocates one frame buffer by default. Set `num_fbs` in the config to
+have it allocate up to three, then get them with `esp_lcd_dpi_panel_get_frame_buffer()`.
+The panel only switches buffers when the bitmap passed to `esp_lcd_panel_draw_bitmap()`
+lies inside one of them: the caller draws a whole frame into the buffer that is not
+being scanned out, then passes it to `esp_lcd_panel_draw_bitmap()` to show it. A bitmap
+from anywhere else, such as a partial draw buffer, is copied into the buffer on screen,
+so extra buffers then only cost memory (about 1.1 MiB each at 800x480 RGB888).
+
 ## Two things worth knowing
 
 Both were needed to get a picture, and neither is obvious from the Linux drivers:
