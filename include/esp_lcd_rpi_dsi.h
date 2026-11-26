@@ -30,8 +30,9 @@
  *    GPIO 0 drives PC_RST_BRIDGE_N | PC_RST_LCD_N. See rpi_dsi_power_on().
  *  - The DSI clock lane must stay in high speed continuously. The bridge builds
  *    its DPI pixel clock from that lane, so the IDF default of parking it in
- *    low-power between packets stops the panel cold. Set
- *    esp_lcd_dsi_bus_config_t::flags.clock_lane_force_hs.
+ *    low-power between packets stops the panel cold. On ESP-IDF v5.5.5 and newer
+ *    set esp_lcd_dsi_bus_config_t::flags.clock_lane_force_hs; before v5.5.5 set
+ *    esp_lcd_rpi_dsi_vendor_config_t::flags.continuous_clock instead.
  *
  * Verified working at 800x480 with the legacy timing, one data lane, burst mode
  * and low-power blanking transitions left at the IDF defaults.

@@ -11,6 +11,7 @@
 #if SOC_MIPI_DSI_SUPPORTED
 #include <stdlib.h>
 #include "esp_check.h"
+#include "esp_idf_version.h"
 #include "esp_log.h"
 #include "esp_ldo_regulator.h"
 #include "esp_lcd_panel_ops.h"
@@ -110,9 +111,14 @@ esp_err_t esp_lcd_rpi_dsi_start(const esp_lcd_rpi_dsi_config_t *config,
         .bus_id = config->dsi_bus_id,
         .num_data_lanes = 1,
         .lane_bit_rate_mbps = config->lane_bit_rate_mbps,
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 5)
         // the bridge makes its pixel clock out of the DSI clock lane, so that lane
         // cannot be parked in low-power between packets
         .flags.clock_lane_force_hs = config->flags.continuous_clock,
+#else
+        // ESP-IDF before v5.5.5 has no clock_lane_force_hs; the panel pins the clock
+        // lane to HS itself, see esp_lcd_rpi_dsi_vendor_config_t::flags.continuous_clock
+#endif
     };
     ESP_GOTO_ON_ERROR(esp_lcd_new_dsi_bus(&bus_config, &disp->dsi_bus), err, TAG, "creating the DSI bus failed");
 
@@ -134,6 +140,10 @@ esp_err_t esp_lcd_rpi_dsi_start(const esp_lcd_rpi_dsi_config_t *config,
         .num_fbs = config->num_fbs,
         .video_timing = config->timing,
         .flags.disable_lp = config->flags.disable_lp,
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(6, 0, 0)
+        // ESP-IDF 5.x enables DMA2D through the panel config, not esp_lcd_dpi_panel_enable_dma2d()
+        .flags.use_dma2d = config->flags.use_dma2d,
+#endif
     };
     esp_lcd_rpi_dsi_vendor_config_t vendor_config = {
         .mipi_config = {
@@ -143,6 +153,7 @@ esp_err_t esp_lcd_rpi_dsi_start(const esp_lcd_rpi_dsi_config_t *config,
         .i2c_bus = disp->i2c_bus,
         .brightness = config->brightness,
         .flags.non_burst_video = config->flags.non_burst_video,
+        .flags.continuous_clock = config->flags.continuous_clock,
     };
     esp_lcd_panel_dev_config_t panel_dev_config = {
         .reset_gpio_num = -1,
@@ -153,9 +164,11 @@ esp_err_t esp_lcd_rpi_dsi_start(const esp_lcd_rpi_dsi_config_t *config,
     ESP_GOTO_ON_ERROR(esp_lcd_new_panel_rpi_dsi(disp->dbi_io, &panel_dev_config, &disp->panel), err, TAG,
                       "creating the panel failed");
 
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
     if (config->flags.use_dma2d) {
         ESP_GOTO_ON_ERROR(esp_lcd_dpi_panel_enable_dma2d(disp->panel), err, TAG, "enabling DMA2D failed");
     }
+#endif
 
     ESP_GOTO_ON_ERROR(esp_lcd_panel_reset(disp->panel), err, TAG, "panel reset failed");
     ESP_GOTO_ON_ERROR(esp_lcd_panel_init(disp->panel), err, TAG, "panel init failed");

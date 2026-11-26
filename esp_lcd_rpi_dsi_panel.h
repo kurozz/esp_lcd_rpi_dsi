@@ -29,6 +29,10 @@ typedef struct {
     uint8_t brightness;              /*!< 0 falls back to 255 */
     struct {
         uint32_t non_burst_video: 1;
+        uint32_t continuous_clock: 1; /*!< ESP-IDF before v5.5.5, where it is required: pin the clock lane
+                                           to HS once video starts, since esp_lcd_dsi_bus_config_t has no
+                                           clock_lane_force_hs there. Ignored from v5.5.5, where that bus
+                                           flag does it. */
     } flags;
 } esp_lcd_rpi_dsi_vendor_config_t;
 

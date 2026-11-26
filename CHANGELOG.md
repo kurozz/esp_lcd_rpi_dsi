@@ -8,6 +8,11 @@ All notable changes to this component are documented here. The format follows
 
 ### Added
 
+- ESP-IDF v5.5 support, from v5.5.4. From v5.5.5 the DSI clock lane is pinned to high speed by the
+  `clock_lane_force_hs` bus flag, as on 6.x; on v5.5.4, which lacks that flag, the panel pins it after the
+  DPI stream starts. On 5.5, DMA2D is enabled through the DPI panel config and the LCD HAL comes from `hal`
+  rather than `esp_hal_lcd`.
+- `esp_lcd_rpi_dsi_vendor_config_t::flags.continuous_clock`, used only before ESP-IDF v5.5.5.
 - `esp_lcd_rpi_dsi_config_t::num_fbs`, the number of screen-sized frame buffers
   the DPI panel allocates, passed to `esp_lcd_dpi_panel_config_t::num_fbs`.
   `ESP_LCD_RPI_DSI_DEFAULT_CONFIG()` sets it to 1, the IDF's default.
