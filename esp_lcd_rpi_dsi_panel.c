@@ -95,7 +95,7 @@ static const rpi_dsi_bridge_cmd_t s_bridge_init[] = {
 
 /* Layout mirror of the private `esp_lcd_dsi_bus_t` from
  * $IDF_PATH/components/esp_lcd/dsi/mipi_dsi_priv.h (IDF v6.1; the leading
- * `bus_id` and `hal` members are the same in v5.5.4). We only need the
+ * `bus_id` and `hal` members are the same in v5.5.4 and v5.5.5). We only need the
  * HAL context, to emit generic long writes and to override the video mode --
  * neither is reachable through the public esp_lcd API. rpi_dsi_bus_hal() sanity
  * checks the result so a layout change in a future IDF fails loudly here rather
@@ -322,10 +322,10 @@ static esp_err_t panel_rpi_dsi_init(esp_lcd_panel_t *panel)
     // now let the DPI panel start streaming video into the bridge
     ESP_RETURN_ON_ERROR(ctx->init(panel), TAG, "starting the DPI video stream failed");
 
-#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(6, 0, 0)
-    // ESP-IDF 5.x has no clock_lane_force_hs bus flag, and the DPI init above has just
-    // put the clock lane in AUTO, dropping it to low power between packets. The bridge
-    // makes its pixel clock from that lane, so pin it to high speed here instead.
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 5, 5)
+    // ESP-IDF before v5.5.5 has no clock_lane_force_hs bus flag, and the DPI init above
+    // has just put the clock lane in AUTO, dropping it to low power between packets. The
+    // bridge makes its pixel clock from that lane, so pin it to high speed here instead.
     if (ctx->continuous_clock) {
         mipi_dsi_host_ll_set_clock_lane_state(ctx->hal->host, MIPI_DSI_LL_CLOCK_LANE_STATE_HS);
     }

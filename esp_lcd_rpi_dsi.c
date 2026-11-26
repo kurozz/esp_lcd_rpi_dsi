@@ -108,13 +108,14 @@ esp_err_t esp_lcd_rpi_dsi_start(const esp_lcd_rpi_dsi_config_t *config,
         .bus_id = config->dsi_bus_id,
         .num_data_lanes = 1,
         .lane_bit_rate_mbps = config->lane_bit_rate_mbps,
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 5)
         // the bridge makes its pixel clock out of the DSI clock lane, so that lane
         // cannot be parked in low-power between packets
         .flags.clock_lane_force_hs = config->flags.continuous_clock,
+#else
+        // ESP-IDF before v5.5.5 has no clock_lane_force_hs; the panel pins the clock
+        // lane to HS itself, see esp_lcd_rpi_dsi_vendor_config_t::flags.continuous_clock
 #endif
-        // (on ESP-IDF 5.x the panel pins the clock lane to HS itself, see
-        // esp_lcd_rpi_dsi_vendor_config_t::flags.continuous_clock)
     };
     ESP_GOTO_ON_ERROR(esp_lcd_new_dsi_bus(&bus_config, &disp->dsi_bus), err, TAG, "creating the DSI bus failed");
 

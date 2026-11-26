@@ -78,16 +78,17 @@ GPL-2.0-only.
 
 ## Requirements
 
-ESP-IDF v5.5 or newer, ESP32-P4. Pulls in `espressif/esp_lcd_touch_ft5x06` for the
+ESP-IDF v5.5.4 or newer, ESP32-P4. Pulls in `espressif/esp_lcd_touch_ft5x06` for the
 touch controller.
 
-On ESP-IDF 5.5, `esp_lcd_dsi_bus_config_t` has no `clock_lane_force_hs`. Instead the panel pins the clock lane
-to high speed right after the DPI stream starts, and DMA2D is enabled through the DPI panel config. Both are
-selected at compile time, and the 6.x code path is unchanged.
+From ESP-IDF v5.5.5 the DSI clock lane is pinned to high speed by the bus flag
+`esp_lcd_dsi_bus_config_t::flags.clock_lane_force_hs`. v5.5.4 has no such flag, so there the panel pins the lane
+right after the DPI stream starts. DMA2D is enabled with `esp_lcd_dpi_panel_enable_dma2d()` on 6.x and through the
+DPI panel config on 5.5. Both choices are made at compile time.
 
 Verified on an ESP32-P4-Function-EV-Board v1.5.2 (chip revision v1.3) under ESP-IDF
-v6.1, driving a 5" OSOYOO panel v1.1 with firmware revision 2 (`REG_ID` `0xc3`). It
-builds clean on v6.0, but has not been run there. The revision 1 firmware path is
+v6.1, v5.5.5 and v5.5.4, driving a 5" OSOYOO panel v1.1 with firmware revision 2
+(`REG_ID` `0xc3`). It builds clean on v6.0, but has not been run there. The revision 1 firmware path is
 ported from the kernel driver and has not been run at all.
 
 Also verified on a Waveshare ESP32-P4-WIFI6-DEV-KIT (chip revision v3.1) under ESP-IDF v5.5.4. It drove a
