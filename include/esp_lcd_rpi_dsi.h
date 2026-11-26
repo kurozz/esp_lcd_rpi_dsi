@@ -127,7 +127,8 @@ typedef struct {
     esp_lcd_video_timing_t timing;    /*!< Video timing */
     uint8_t brightness;               /*!< Backlight PWM applied once the panel is up, 0-255 */
     uint8_t num_fbs;                  /*!< Screen-sized frame buffers the DPI panel allocates, passed to
-                                           esp_lcd_dpi_panel_config_t::num_fbs, 1 to 3. 0 also gives one */
+                                           esp_lcd_dpi_panel_config_t::num_fbs, 1 to 3 (0 also gives one).
+                                           A swap needs drawing into those buffers, see the README */
     struct {
         uint32_t continuous_clock: 1; /*!< Keep the clock lane in HS. Required, see the notes above */
         uint32_t non_burst_video: 1;  /*!< Non-burst with sync pulses instead of the IDF's burst default */
