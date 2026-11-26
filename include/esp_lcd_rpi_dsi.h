@@ -224,6 +224,9 @@ esp_err_t esp_lcd_rpi_dsi_start(const esp_lcd_rpi_dsi_config_t *config,
  *
  * @note An I2C bus supplied through config.i2c.bus is left alone; one created by
  *       the driver is deleted.
+ *
+ * @return ESP_OK, or the first error of the teardown. A failed step does not stop
+ *         the ones after it, and the handle is freed either way.
  */
 esp_err_t esp_lcd_rpi_dsi_stop(esp_lcd_rpi_dsi_handle_t handle);
 

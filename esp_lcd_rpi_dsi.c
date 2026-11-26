@@ -29,6 +29,7 @@ struct esp_lcd_rpi_dsi_t {
     esp_lcd_dsi_bus_handle_t dsi_bus;
     esp_lcd_panel_io_handle_t dbi_io;
     esp_lcd_panel_handle_t panel;
+    bool dma2d_enabled;  // through esp_lcd_dpi_panel_enable_dma2d(), which has to be undone before deleting the panel
     esp_lcd_panel_io_handle_t touch_io;
     esp_lcd_touch_handle_t touch;
 };
@@ -167,6 +168,7 @@ esp_err_t esp_lcd_rpi_dsi_start(const esp_lcd_rpi_dsi_config_t *config,
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
     if (config->flags.use_dma2d) {
         ESP_GOTO_ON_ERROR(esp_lcd_dpi_panel_enable_dma2d(disp->panel), err, TAG, "enabling DMA2D failed");
+        disp->dma2d_enabled = true;
     }
 #endif
 
@@ -189,33 +191,53 @@ err:
     return ret;
 }
 
+/* Teardown goes on past a failed step, so that one stuck resource does not keep
+ * all the others; the first failure is what esp_lcd_rpi_dsi_stop() reports. */
+static void rpi_dsi_teardown_step(esp_err_t *first_err, esp_err_t err, const char *what)
+{
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "%s failed: %s", what, esp_err_to_name(err));
+        if (*first_err == ESP_OK) {
+            *first_err = err;
+        }
+    }
+}
+
 esp_err_t esp_lcd_rpi_dsi_stop(esp_lcd_rpi_dsi_handle_t handle)
 {
     ESP_RETURN_ON_FALSE(handle, ESP_ERR_INVALID_ARG, TAG, "invalid handle");
+    esp_err_t ret = ESP_OK;
 
     if (handle->touch) {
-        esp_lcd_touch_del(handle->touch);
+        rpi_dsi_teardown_step(&ret, esp_lcd_touch_del(handle->touch), "deleting the touch controller");
     }
     if (handle->touch_io) {
-        esp_lcd_panel_io_del(handle->touch_io);
+        rpi_dsi_teardown_step(&ret, esp_lcd_panel_io_del(handle->touch_io), "deleting the touch panel IO");
     }
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+    // ESP-IDF 6.x refuses to delete a DPI panel whose DMA2D is still enabled; 5.x
+    // releases DMA2D as part of the delete
+    if (handle->dma2d_enabled) {
+        rpi_dsi_teardown_step(&ret, esp_lcd_dpi_panel_disable_dma2d(handle->panel), "disabling DMA2D");
+    }
+#endif
     if (handle->panel) {
-        esp_lcd_panel_del(handle->panel);
+        rpi_dsi_teardown_step(&ret, esp_lcd_panel_del(handle->panel), "deleting the panel");
     }
     if (handle->dbi_io) {
-        esp_lcd_panel_io_del(handle->dbi_io);
+        rpi_dsi_teardown_step(&ret, esp_lcd_panel_io_del(handle->dbi_io), "deleting the DBI IO");
     }
     if (handle->dsi_bus) {
-        esp_lcd_del_dsi_bus(handle->dsi_bus);
+        rpi_dsi_teardown_step(&ret, esp_lcd_del_dsi_bus(handle->dsi_bus), "deleting the DSI bus");
     }
     if (handle->owns_i2c_bus && handle->i2c_bus) {
-        i2c_del_master_bus(handle->i2c_bus);
+        rpi_dsi_teardown_step(&ret, i2c_del_master_bus(handle->i2c_bus), "deleting the I2C bus");
     }
     if (handle->ldo) {
-        esp_ldo_release_channel(handle->ldo);
+        rpi_dsi_teardown_step(&ret, esp_ldo_release_channel(handle->ldo), "releasing the MIPI DSI PHY LDO");
     }
     free(handle);
-    return ESP_OK;
+    return ret;
 }
 
 esp_lcd_panel_handle_t esp_lcd_rpi_dsi_get_panel(esp_lcd_rpi_dsi_handle_t handle)
