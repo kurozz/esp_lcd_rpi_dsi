@@ -44,6 +44,11 @@ share the bus, and `esp_lcd_rpi_dsi_set_brightness()` for the backlight.
 Defaults come from `Component config -> Raspberry Pi DSI display`; the config struct
 overrides any of them per call.
 
+The DPI panel allocates one frame buffer by default. Set `num_fbs` in the config to
+have it allocate more (up to the IDF's limit of three), for example two to draw into
+one while the DSI DMA scans out the other; `esp_lcd_dpi_panel_get_frame_buffer()`
+then hands out all of them.
+
 ## Two things worth knowing
 
 Both were needed to get a picture, and neither is obvious from the Linux drivers:

@@ -1,5 +1,5 @@
 # Manifest for the ESP Component Registry.
-version: "0.1.0"
+version: "0.2.0"
 description: >-
   Raspberry Pi DSI touch display (and clones such as the 5" OSOYOO) on the ESP32-P4:
   800x480 RGB888 over one MIPI DSI lane through a TC358762-compatible bridge, with an
