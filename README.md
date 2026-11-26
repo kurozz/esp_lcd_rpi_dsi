@@ -91,8 +91,9 @@ touch controller.
 
 From ESP-IDF v5.5.5 the DSI clock lane is pinned to high speed by the bus flag
 `esp_lcd_dsi_bus_config_t::flags.clock_lane_force_hs`. v5.5.4 has no such flag, so there the panel pins the lane
-right after the DPI stream starts. DMA2D is enabled with `esp_lcd_dpi_panel_enable_dma2d()` on 6.x and through the
-DPI panel config on 5.5. Both choices are made at compile time.
+right after the DPI stream starts. DMA2D is enabled with `esp_lcd_dpi_panel_enable_dma2d()` on 6.x, and disabled again
+by `esp_lcd_rpi_dsi_stop()` before the panel is deleted; on 5.5 it goes through the DPI panel config and the delete
+releases it. Both choices are made at compile time.
 
 Verified on an ESP32-P4-Function-EV-Board v1.5.2 (chip revision v1.3) under ESP-IDF
 v6.1, v5.5.5 and v5.5.4, driving a 5" OSOYOO panel v1.1 with firmware revision 2

@@ -276,10 +276,12 @@ static esp_err_t panel_rpi_dsi_del(esp_lcd_panel_t *panel)
 {
     rpi_dsi_panel_t *ctx = panel->user_data;
     rpi_dsi_power_off(ctx);
+    // The context goes only once the DPI panel is gone, so that a refused delete
+    // leaves a panel that is still whole and can be deleted again
+    ESP_RETURN_ON_ERROR(ctx->del(panel), TAG, "deleting the DPI panel failed");
     i2c_master_bus_rm_device(ctx->attiny);
-    esp_err_t ret = ctx->del(panel);
     free(ctx);
-    return ret;
+    return ESP_OK;
 }
 
 static esp_err_t panel_rpi_dsi_reset(esp_lcd_panel_t *panel)

@@ -17,6 +17,16 @@ All notable changes to this component are documented here. The format follows
   the DPI panel allocates, passed to `esp_lcd_dpi_panel_config_t::num_fbs`.
   `ESP_LCD_RPI_DSI_DEFAULT_CONFIG()` sets it to 1, the IDF's default.
 
+### Fixed
+
+- `esp_lcd_rpi_dsi_stop()` disables DMA2D before deleting the DPI panel on ESP-IDF 6.x, which refuses to delete a
+  panel with DMA2D still enabled. The panel's frame buffers and its DSI bridge interrupt are released, so
+  `esp_lcd_rpi_dsi_start()` works again after a stop. The same applies to the cleanup after a failed start.
+- `esp_lcd_rpi_dsi_stop()` returns the first error of the teardown instead of always `ESP_OK`, and still goes
+  through the remaining steps after a failure.
+- Deleting the panel keeps its context when the DPI panel refuses to be deleted, so the panel can still be
+  deleted again.
+
 ## [0.1.0] - 2026-08-29
 
 Initial release.
